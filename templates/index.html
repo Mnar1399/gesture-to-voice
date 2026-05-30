@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Language UI</title>
+
+    <!-- الخط -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --main-color: #E79A3B;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Cairo', sans-serif;
+
+            background: url('/static/images/bg.png') no-repeat center;
+            background-size: 130%;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.92);
+            z-index: -1;
+        }
+
+        h1 {
+            position: absolute;
+            top: 40px;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--main-color);
+            letter-spacing: 1px;
+        }
+
+        .container {
+            width: 420px;
+        }
+
+        .camera-box {
+            background: white;
+            padding: 15px;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border: 3px solid var(--main-color);
+        }
+
+       #camera {
+    width: 100%;
+    border-radius: 20px;
+}
+
+        .result {
+            margin-top: 25px;
+            background: white;
+            padding: 25px;
+            border-radius: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .arabic {
+            font-size: 28px;
+            font-weight: bold;
+            color: #222;
+        }
+
+        .english {
+            color: var(--main-color);
+            margin-top: 8px;
+            font-size: 16px;
+        }
+
+        /* أزرار */
+        .buttons {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        button {
+            margin: 5px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: none;
+            background: var(--main-color);
+            color: white;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>GESTURE TO VOICE</h1>
+
+<div class="container">
+
+    <div class="camera-box">
+       <img id="camera" src="{{ url_for('video_feed') }}">
+    </div>
+
+    <div class="result">
+        <div class="arabic" id="text">...</div>
+        <div class="english" id="trans">Waiting for gesture</div>
+    </div>
+
+   
+
+<script>
+// تشغيل الكاميرا
+
+
+// ربط الجمل بالأصوات
+const sounds = {
+    "السلام عليكم": "/static/audio/Sara_alsalam_kum.mp3",
+    "وين دورة المياه": "/static/audio/Sara_win_alhamam.mp3",
+    "وين الطوارئ": "/static/audio/Sara_win_altawaree.mp3"
+};
+
+let currentAudio = null;
+
+// تشغيل الصوت
+function playSound(text) {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+    }
+
+    const src = sounds[text];
+    if (!src) return;
+
+    currentAudio = new Audio(src);
+    currentAudio.play();
+}
+
+// تحديث الترجمة + الصوت
+function updateResult(ar, en) {
+    document.getElementById("text").innerText = ar;
+    document.getElementById("trans").innerText = en;
+
+    setTimeout(() => {
+        playSound(ar);
+    }, 200);
+}
+</script>
+<script>
+
+async function predictGesture() {
+
+    const response = await fetch("/predict");
+
+    const data = await response.json();
+
+    updateResult(data.arabic, data.english);
+}
+
+setInterval(() => {
+    predictGesture();
+}, 3000);
+
+</script>
+</body>
+</html>
+
