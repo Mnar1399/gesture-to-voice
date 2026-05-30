@@ -105,7 +105,35 @@
         }
     </style>
 </head>
+<script>
 
+const video = document.getElementById("camera");
+
+async function startCamera() {
+
+    try {
+
+        const stream =
+            await navigator.mediaDevices.getUserMedia({
+                video: true,
+                audio: false
+            });
+
+        video.srcObject = stream;
+
+    }
+
+    catch(err) {
+
+        console.error(err);
+
+        alert("Camera access denied");
+    }
+}
+
+startCamera();
+
+</script>
 <body>
 
 <h1>GESTURE TO VOICE</h1>
@@ -113,7 +141,8 @@
 <div class="container">
 
     <div class="camera-box">
-       <img id="camera" src="{{ url_for('video_feed') }}">
+       <video id="camera" autoplay playsinline></video>
+        <canvas id="canvas" style="display:none;"></canvas>
     </div>
 
     <div class="result">
